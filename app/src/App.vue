@@ -8,6 +8,7 @@ import EnglishGrammarGuide from './components/EnglishGrammarGuide.vue'
 import GrammarGuide from './components/GrammarGuide.vue'
 import PartsOfSpeechGuide from './components/PartsOfSpeechGuide.vue'
 import NgslChecklist from './components/NgslChecklist.vue'
+import CurriculumViewer from './components/CurriculumViewer.vue'
 import data from '@data/vocabulary.json'
 
 const currentPage = ref('vocabulary')
@@ -41,6 +42,7 @@ const allItems = computed(() => [...data.vocabulary, ...data.patterns])
     <EnglishGrammarGuide v-else-if="currentPage === 'english-grammar'" />
     <GrammarGuide v-else-if="currentPage === 'grammar'" />
     <PartsOfSpeechGuide v-else-if="currentPage === 'parts-of-speech'" />
+    <CurriculumViewer v-else-if="currentPage === 'curriculum'" />
   </div>
 </template>
 
