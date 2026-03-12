@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
 
 export default defineConfig({
   base: '/english-for-it-engineers/',
   plugins: [vue()],
-  resolve: {
-    alias: {
-      '@data': resolve(__dirname, '../docs/references')
+  server: {
+    host: true,
+    proxy: {
+      '/api': 'http://localhost:8080'
     }
   }
 })
