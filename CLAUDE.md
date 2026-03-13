@@ -33,25 +33,43 @@ ITエンジニア向け英語学習プロジェクト。
 | 技術文書英語 | B2 Reading+Writing | ADR/RFCを読み、簡潔な技術文書を英語で書ける |
 
 ## プロジェクト方針
-- 学習教材・メソッド設計プロジェクト
-- ドキュメント中心（Markdown + JSON）
+- 武田塾メソッド「①単語・熟語・文法 → ②英文解釈 → ③長文読解」の段階的学習
+- 現在は Step1（単語・文法）のみ実装。Step2/3 は後で追加
 - 実際のOSSリポジトリや公式ドキュメントを教材として活用
-- Vue 3 + Vite による語彙ビューア（`app/`）
+- モノレポ: Vue 3 フロントエンド + Spring Boot バックエンド
 
 ## Directory Structure
-- `app/` - 語彙ビューア（Vue 3 + Vite）
+- `frontend/` - フロントエンド（Vue 3 + Vite + Vue Router）
+- `backend/` - バックエンド（Spring Boot + MyBatis + SQLite）
 - `docs/plans/` - 設計書・学習プラン
 - `docs/curriculum/` - カリキュラム・学習教材
-- `docs/references/` - 語彙データ（vocabulary.json）
-- `docs/exercises/` - 練習問題・演習
+  - `step1-grammar/` - 文法解説（01〜14、番号順）
+  - `step1-vocabulary/` - 語彙解説
+- `scripts/` - ユーティリティスクリプト
 
 ### ファイル命名規則
 | ディレクトリ | 命名規則 | 例 |
 |-------------|---------|-----|
-| `docs/plans/` | `YYYY-MM-DD-<topic>-<type>.md` | `2026-02-17-customization-design.md` |
-| `docs/curriculum/` | `phase<N>-<topic>.md` | `phase1-official-docs-reading.md` |
-| `docs/references/` | `vocabulary.json`（単一ファイル） | `vocabulary.json` |
-| `docs/exercises/` | `<category>-<topic>.md` | `github-reading-issue-discussion.md` |
+| `docs/plans/` | `YYYY-MM-DD-<topic>-<type>.md` | `2026-03-13-project-restructure-design.md` |
+| `docs/curriculum/step1-grammar/` | `NN-<topic>.md` | `01-passive-voice.md` |
+| `docs/curriculum/step1-vocabulary/` | `vocabulary-<topic>.md` | `vocabulary-it-basic.md` |
+
+## Development
+
+### バックエンド起動
+```bash
+cd backend && ./gradlew bootRun
+# → http://localhost:8080
+```
+
+### フロントエンド起動
+```bash
+cd frontend && npm run dev
+# → http://100.124.149.51:5173/english-for-it-engineers/
+```
+
+### DB初期化
+SQLiteのDB（backend/study.db）は Spring Boot 起動時に schema.sql + data.sql で自動初期化される。
 
 ## Workflow
 1. Read existing docs before making changes
