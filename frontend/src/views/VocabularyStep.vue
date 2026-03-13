@@ -45,44 +45,69 @@
       </div>
     </div>
 
+    <!-- 品詞略語の凡例 -->
+    <div class="pos-legend">
+      <span class="legend-item">n.=名詞</span>
+      <span class="legend-item">v.=動詞</span>
+      <span class="legend-item">adj.=形容詞</span>
+      <span class="legend-item">adv.=副詞</span>
+      <span class="legend-item">prep.=前置詞</span>
+      <span class="legend-item">conj.=接続詞</span>
+      <span class="legend-item">pron.=代名詞</span>
+      <span class="legend-item">det.=限定詞</span>
+    </div>
+
     <!-- 単語リスト -->
     <div class="word-list">
       <div v-for="word in words" :key="word.id" class="word-row">
-        <div class="word-info">
+        <div class="word-line1">
           <button class="reveal-btn" @click="toggleReveal(word.id)">
             {{ revealedWords.has(word.id) ? '隠す' : '意味' }}
           </button>
+          <span class="field-label">単語</span>
           <span class="word-text">{{ word.word }}</span>
-          <span v-if="word.partOfSpeech" class="word-pos">{{ word.partOfSpeech }}</span>
-          <div v-if="revealedWords.has(word.id)" class="word-details">
-            <div class="word-meaning">{{ word.meaningGeneral }}</div>
-            <div v-if="word.meaningIt" class="word-meaning-it">IT: {{ word.meaningIt }}</div>
-            <div v-if="getRelated(word.word)" class="word-related">
-              <div v-if="getRelated(word.word).derivatives" class="related-group">
-                派生: {{ getRelated(word.word).derivatives.join(', ') }}
-              </div>
-              <div v-if="getRelated(word.word).synonyms" class="related-group">
-                同義: {{ getRelated(word.word).synonyms.join(', ') }}
-              </div>
-              <div v-if="getRelated(word.word).antonyms" class="related-group">
-                対義: {{ getRelated(word.word).antonyms.join(', ') }}
-              </div>
-            </div>
+          <span class="field-label">発音</span>
+          <span class="word-ipa">{{ word.pronunciationIpa || '-' }}</span>
+          <span class="field-label">品詞</span>
+          <span class="word-pos-val">{{ word.partOfSpeech || '-' }}</span>
+          <div class="word-actions">
+            <button
+              :class="['known-btn', 'unknown', { active: word.known === 0 }]"
+              @click="setKnown(word, 0)"
+            >✗</button>
+            <button
+              :class="['known-btn', 'learning', { active: word.known === 1 }]"
+              @click="setKnown(word, 1)"
+            >△</button>
+            <button
+              :class="['known-btn', 'mastered', { active: word.known === 2 }]"
+              @click="setKnown(word, 2)"
+            >◎</button>
           </div>
         </div>
-        <div class="word-actions">
-          <button
-            :class="['known-btn', 'unknown', { active: word.known === 0 }]"
-            @click="setKnown(word, 0)"
-          >✗</button>
-          <button
-            :class="['known-btn', 'learning', { active: word.known === 1 }]"
-            @click="setKnown(word, 1)"
-          >△</button>
-          <button
-            :class="['known-btn', 'mastered', { active: word.known === 2 }]"
-            @click="setKnown(word, 2)"
-          >◎</button>
+        <div v-if="revealedWords.has(word.id)" class="word-details">
+          <div class="detail-row">
+            <span class="detail-label">意味</span>
+            <span class="word-meaning">{{ word.meaningGeneral }}</span>
+          </div>
+          <div v-if="word.meaningIt" class="detail-row">
+            <span class="detail-label">IT</span>
+            <span class="word-meaning-it">{{ word.meaningIt }}</span>
+          </div>
+          <template v-if="getRelated(word.word)">
+            <div v-if="getRelated(word.word).synonyms" class="detail-row">
+              <span class="detail-label">同義</span>
+              <span class="related-val">{{ getRelated(word.word).synonyms.join(', ') }}</span>
+            </div>
+            <div v-if="getRelated(word.word).antonyms" class="detail-row">
+              <span class="detail-label">対義</span>
+              <span class="related-val">{{ getRelated(word.word).antonyms.join(', ') }}</span>
+            </div>
+            <div v-if="getRelated(word.word).derivatives" class="detail-row">
+              <span class="detail-label">派生</span>
+              <span class="related-val">{{ getRelated(word.word).derivatives.join(', ') }}</span>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -224,6 +249,21 @@ fetchWords()
 .search-input:focus { border-color: #64b5f6; }
 .search-input::placeholder { color: #666; }
 
+.pos-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  background: #1a1a2e;
+  border-radius: 4px;
+}
+
+.legend-item {
+  color: #888;
+  font-size: 11px;
+}
+
 .filter-bar {
   display: flex;
   gap: 12px;
@@ -257,49 +297,22 @@ fetchWords()
 
 .word-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
+  flex-direction: column;
+  padding: 8px 12px;
   background: #2a2a4a;
   border-radius: 4px;
+  height: 96px;
+  overflow: hidden;
 }
 
-.word-info {
+.word-line1 {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.word-text { font-weight: bold; color: #fff; }
-.word-pos { color: #888; font-size: 11px; background: #1a1a2e; padding: 1px 6px; border-radius: 3px; }
-
-.word-details {
-  width: 100%;
-  padding-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.word-meaning { color: #aaa; font-size: 14px; }
-.word-meaning-it { color: #64b5f6; font-size: 13px; }
-
-.word-related {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 2px;
-}
-
-.related-group {
-  color: #888;
-  font-size: 12px;
 }
 
 .reveal-btn {
-  padding: 2px 8px;
+  padding: 4px 8px;
   background: #3a3a5a;
   color: #aaa;
   border: none;
@@ -307,12 +320,55 @@ fetchWords()
   cursor: pointer;
   font-size: 11px;
   flex-shrink: 0;
-  width: 72px;
+  width: 48px;
   text-align: center;
 }
 .reveal-btn:hover { color: #fff; }
 
-.word-actions { display: flex; gap: 4px; }
+.field-label {
+  color: #666;
+  font-size: 10px;
+}
+
+.word-text { font-weight: bold; color: #fff; font-size: 14px; }
+.word-ipa { color: #888; font-size: 12px; font-style: italic; }
+.word-pos-val { color: #888; font-size: 11px; background: #1a1a2e; padding: 1px 6px; border-radius: 3px; }
+
+.word-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.word-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 4px;
+  padding-left: 56px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.detail-label {
+  color: #666;
+  font-size: 10px;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.word-meaning { color: #ccc; font-size: 13px; }
+.word-meaning-it { color: #64b5f6; font-size: 12px; }
+
+.related-val {
+  color: #888;
+  font-size: 12px;
+}
 
 .known-btn {
   padding: 4px 8px;
