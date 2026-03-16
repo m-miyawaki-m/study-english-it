@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studyenglish.mapper.GrammarMapper">
+
+    <select id="findAll" resultType="com.studyenglish.model.GrammarTopic">
+        SELECT * FROM grammar_topics ORDER BY sort_order ASC
+    </select>
+
+    <select id="findById" resultType="com.studyenglish.model.GrammarTopic">
+        SELECT * FROM grammar_topics WHERE id = #{id}
+    </select>
+
+    <update id="updateCompleted">
+        UPDATE grammar_topics SET completed = #{completed} WHERE id = #{id}
+    </update>
+
+</mapper>

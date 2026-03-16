@@ -33,25 +33,126 @@ ITエンジニア向け英語学習プロジェクト。
 | 技術文書英語 | B2 Reading+Writing | ADR/RFCを読み、簡潔な技術文書を英語で書ける |
 
 ## プロジェクト方針
-- 学習教材・メソッド設計プロジェクト
-- ドキュメント中心（Markdown + JSON）
+- 武田塾メソッド「①単語・熟語・文法 → ②英文解釈 → ③長文読解」の段階的学習
+- 現在は Step1（単語・文法）のみ実装。Step2/3 は後で追加
 - 実際のOSSリポジトリや公式ドキュメントを教材として活用
-- Vue 3 + Vite による語彙ビューア（`app/`）
+- モノレポ: Vue 3 フロントエンド + Spring Boot バックエンド
 
 ## Directory Structure
-- `app/` - 語彙ビューア（Vue 3 + Vite）
+- `frontend/` - フロントエンド（Vue 3 + Vite + Vue Router）
+- `backend/` - バックエンド（Spring Boot + MyBatis + SQLite）
 - `docs/plans/` - 設計書・学習プラン
 - `docs/curriculum/` - カリキュラム・学習教材
-- `docs/references/` - 語彙データ（vocabulary.json）
-- `docs/exercises/` - 練習問題・演習
+  - `step1-grammar/` - 文法解説（01〜14、番号順）
+  - `step1-vocabulary/` - 語彙解説
+- `scripts/` - ユーティリティスクリプト
 
 ### ファイル命名規則
 | ディレクトリ | 命名規則 | 例 |
 |-------------|---------|-----|
-| `docs/plans/` | `YYYY-MM-DD-<topic>-<type>.md` | `2026-02-17-customization-design.md` |
-| `docs/curriculum/` | `phase<N>-<topic>.md` | `phase1-official-docs-reading.md` |
-| `docs/references/` | `vocabulary.json`（単一ファイル） | `vocabulary.json` |
-| `docs/exercises/` | `<category>-<topic>.md` | `github-reading-issue-discussion.md` |
+| `docs/plans/` | `YYYY-MM-DD-<topic>-<type>.md` | `2026-03-13-project-restructure-design.md` |
+| `docs/curriculum/step1-grammar/` | `NN-<topic>.md` | `01-passive-voice.md` |
+| `docs/curriculum/step1-vocabulary/` | `vocabulary-<topic>.md` | `vocabulary-it-basic.md` |
+
+## Development
+
+### バックエンド起動
+```bash
+cd backend && ./gradlew bootRun
+# → http://localhost:8080
+```
+
+### フロントエンド起動
+```bash
+cd frontend && npm run dev
+# → http://100.124.149.51:5173/english-for-it-engineers/
+```
+
+### DB初期化
+SQLiteのDB（backend/study.db）は Spring Boot 起動時に schema.sql + data.sql で自動初期化される。
+
+## Coding Standards
+
+### コード品質チェックリスト
+作業完了前に必ず確認:
+- [ ] 関数は50行以内
+- [ ] ファイルは800行以内（200-400行を目安）
+- [ ] ネストは4段以内
+- [ ] エラーハンドリングが適切（エラーを握りつぶさない）
+- [ ] ハードコードされた値がない（定数または設定を使う）
+- [ ] 可読性の高い命名
+
+### イミュータビリティ
+オブジェクトや配列は直接変更せず、新しいコピーを作成する:
+```javascript
+// NG: 直接変更
+user.name = 'New Name'
+items.push(newItem)
+
+// OK: 新しいオブジェクト/配列を作成
+const updatedUser = { ...user, name: 'New Name' }
+const updatedItems = [...items, newItem]
+```
+
+### エラーハンドリング
+- UI側: ユーザーに分かりやすいエラーメッセージ
+- サーバー側: 詳細なエラーログ
+- エラーを黙って無視しない
+- 外部データ（APIレスポンス、ユーザー入力）は信頼しない
+
+### ファイル構成
+- 多くの小さなファイル > 少数の大きなファイル
+- 機能/ドメインでまとめる（技術レイヤーではなく）
+- 高凝集・低結合
+
+## Security
+
+コミット前の必須チェック:
+- [ ] シークレットのハードコードがない（APIキー、パスワード、トークン）
+- [ ] ユーザー入力のバリデーション済み
+- [ ] SQLインジェクション対策済み（パラメータ化クエリ）
+- [ ] XSS対策済み（HTMLサニタイズ）
+- [ ] エラーメッセージに機密情報が含まれない
+
+## Development Workflow
+
+### 機能実装の手順
+1. **計画** - 複雑な機能は実装前に設計を整理し、方針をユーザーに確認する
+2. **検証** - 大量データ生成や大規模変更の前に、小さなサンプルで検証する
+3. **実装** - 小さな単位で段階的に実装。各ステップの完了後に結果を確認
+4. **テスト** - 新機能にはテストを書く（バックエンドは JUnit、フロントエンドは手動確認）
+5. **レビュー** - 実装後にコードの品質を確認
+6. **コミット** - Conventional Commits 形式
+
+### 大量データ生成・並列作業時の注意
+- 生成方法（手動 vs 自動）、品質基準、リスクを事前にユーザーに確認
+- DB参照データはIDハードコードではなくサブクエリ等の安定した参照方式を使う
+- 並列エージェント使用前に重複リスク・出力形式・マージ方法を設計
+- 「とりあえず全量」ではなく、小サンプルで検証してから本番規模に拡大
+
+### コミットメッセージ形式
+```
+<type>: <description>
+```
+type: feat, fix, refactor, docs, test, chore, perf, ci
+
+### PR作成時
+1. ベースブランチからの全コミット履歴を分析
+2. `git diff [base-branch]...HEAD` で全変更を確認
+3. 包括的なPRサマリーを作成
+4. テストプランを含める
+
+## Context Management
+
+### 長いセッションでの品質維持
+- コンテキストが長くなったら、大規模な変更（複数ファイルのリファクタリング等）を避ける
+- 複雑なタスクは新しいセッションで開始する
+- `/checkpoint create` で進捗を保存してから `/clear` でリセット
+
+### タスクの区切り方
+- 1セッション = 1つの明確な目標（機能追加、バグ修正、リファクタリング等）
+- 複数の無関係なタスクを1セッションに詰め込まない
+- 大きなタスクは事前に分割してから各セッションで実行
 
 ## Workflow
 1. Read existing docs before making changes
@@ -61,3 +162,6 @@ ITエンジニア向け英語学習プロジェクト。
    - `/explain` - 英語の技術文章の構文・語彙・表現パターンを解説
    - `/exercise` - 指定テーマで練習問題を生成
    - `/plan` - 学習プランを作成
+   - `/code-review` - 未コミット変更のセキュリティ・品質レビュー
+   - `/verify` - ビルド・テスト・品質の包括検証
+   - `/checkpoint` - 作業進捗のスナップショット作成・比較
